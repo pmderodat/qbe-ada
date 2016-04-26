@@ -11,8 +11,10 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
 
    procedure Dump (C : Constant_Type);
    procedure Dump (ET : Extended_Type);
+   procedure Dump (S : Signature_Type);
    procedure Dump (A : Aggregate_Type_Ref);
    procedure Dump (D : Data_Ref);
+   procedure Dump (F : Function_Ref);
 
    ---------------
    -- Put_Comma --
@@ -56,6 +58,21 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
                   when Double => 'd',
                   when Half   => 'h',
                   when Byte   => 'b'));
+   end Dump;
+
+   ----------
+   -- Dump --
+   ----------
+
+   procedure Dump (S : Signature_Type) is
+   begin
+      case S.Kind is
+         when Base =>
+            Dump (S.T);
+         when Aggregate =>
+            Put (File, ':');
+            Put (File, +S.A.Name);
+      end case;
    end Dump;
 
    ----------
@@ -141,6 +158,51 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put_Line (File, "}");
    end Dump;
 
+   ----------
+   -- Dump --
+   ----------
+
+   procedure Dump (F : Function_Ref) is
+      Is_First : Boolean := True;
+   begin
+      if F.Export then
+         Put (File, "export ");
+      end if;
+
+      Put (File, "function ");
+      if F.Has_Return_Type then
+         Dump (F.Return_Type);
+         Put (File, ' ');
+      end if;
+
+      Put (File, '$');
+      Put (File, +F.Name);
+
+      Put (File, '(');
+      if F.Param_Types /= null then
+         declare
+            N : Natural := 0;
+         begin
+            for P of F.Param_Types.all loop
+               Put_Comma (Is_First);
+               Dump (P);
+               declare
+                  N_Image : constant String := Natural'Image (N);
+               begin
+                  Put
+                    (File,
+                     " %l" & N_Image (N_Image'First + 1 ..  N_Image'Last));
+               end;
+               N := N + 1;
+            end loop;
+         end;
+      end if;
+      Put_Line (File, ")");
+
+      Put_Line (File, "{");
+      Put_Line (File, "}");
+   end Dump;
+
 begin
    for A of Unit.Aggregate_Types loop
       Dump (A);
@@ -148,5 +210,9 @@ begin
 
    for D of Unit.Data_Defs loop
       Dump (D);
+   end loop;
+
+   for F of Unit.Function_Defs loop
+      Dump (F);
    end loop;
 end QBE.Core.Dump;

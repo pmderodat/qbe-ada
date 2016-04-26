@@ -20,6 +20,11 @@ package body QBE.Core is
    procedure Destroy is new Ada.Unchecked_Deallocation
      (Data_Item_Array, Data_Item_Array_Access);
 
+   procedure Destroy is new Ada.Unchecked_Deallocation
+     (Function_Type, Function_Ref);
+   procedure Destroy is new Ada.Unchecked_Deallocation
+     (Signature_Array, Signature_Array_Access);
+
    ------------
    -- Create --
    ------------
@@ -52,6 +57,11 @@ package body QBE.Core is
       for D of Unit.Data_Defs loop
          Destroy (D.Items);
          Destroy (D);
+      end loop;
+
+      for F of Unit.Function_Defs loop
+         Destroy (F.Param_Types);
+         Destroy (F);
       end loop;
 
       Destroy (Unit);
@@ -156,5 +166,56 @@ package body QBE.Core is
    begin
       return D.Name;
    end Symbol;
+
+   ------------
+   -- Create --
+   ------------
+
+   function Create
+     (Unit : Compilation_Unit;
+      Name : String)
+      return Function_Ref
+   is
+      Result : constant Function_Ref := new Function_Type'
+        (Unit            => Unit,
+         Export          => False,
+         Name            => Find (Unit.Symbols, Name),
+         Has_Return_Type => False,
+         Return_Type     => <>,
+         Param_Types     => null);
+   begin
+      Unit.Function_Defs.Append (Result);
+      return Result;
+   end Create;
+
+   ----------------
+   -- Set_Export --
+   ----------------
+
+   procedure Set_Export (F : Function_Ref; Export : Boolean) is
+   begin
+      F.Export := Export;
+   end Set_Export;
+
+   ---------------------
+   -- Set_Return_Type --
+   ---------------------
+
+   procedure Set_Return_Type (F : Function_Ref; T : Signature_Type) is
+   begin
+      F.Has_Return_Type := True;
+      F.Return_Type := T;
+   end Set_Return_Type;
+
+   ---------------------
+   -- Set_Param_Types --
+   ---------------------
+
+   procedure Set_Param_Types (F : Function_Ref; Param_Types : Signature_Array)
+   is
+   begin
+      Destroy (F.Param_Types);
+      F.Param_Types := new Signature_Array'(Param_Types);
+   end Set_Param_Types;
 
 end QBE.Core;

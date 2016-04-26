@@ -170,6 +170,46 @@ package QBE.Core is
       with Inline;
    --  Get the symbol name for D
 
+   ---------------
+   -- Functions --
+   ---------------
+
+   type Function_Ref is private;
+   --  Reference to a function
+
+   type Signature_Type_Kind is (Base, Aggregate);
+
+   type Signature_Type (Kind : Signature_Type_Kind := Base) is record
+      case Kind is
+         when Base      => T : Base_Type;
+         when Aggregate => A : Aggregate_Type_Ref;
+      end case;
+   end record;
+   --  Type to be used for function arguments and return values
+
+   type Signature_Array is array (Positive range <>) of Signature_Type;
+
+   function Create
+     (Unit : Compilation_Unit;
+      Name : String)
+      return Function_Ref;
+   --  Create a new function to be defined in Unit and assign its Name. return
+   --  a reference to the defined function.
+
+   procedure Set_Export (F : Function_Ref; Export : Boolean)
+      with Inline;
+   --  Define whether this function is exported to other compilation units
+
+   procedure Set_Return_Type (F : Function_Ref; T : Signature_Type)
+      with Inline;
+   --  Set a return type for F. If not called, the function is assumed not to
+   --  return anything.
+
+   procedure Set_Param_Types (F : Function_Ref; Param_Types : Signature_Array)
+      with Inline;
+   --  Define the list of parameters that F accepts. If not called, the
+   --  function is assumed to accept no parameter.
+
 private
 
    type Symbol_Type is new GNATCOLL.Symbols.Symbol;
@@ -202,6 +242,19 @@ private
 
    type Data_Ref is access Data;
 
+   type Signature_Array_Access is access Signature_Array;
+
+   type Function_Type is record
+      Unit            : Compilation_Unit;
+      Export          : Boolean;
+      Name            : Symbol_Type;
+      Has_Return_Type : Boolean;
+      Return_Type     : Signature_Type;
+      Param_Types     : Signature_Array_Access;
+   end record;
+
+   type Function_Ref is access Function_Type;
+
    function Get_Kind (A : Aggregate_Type_Ref) return Aggregate_Type_Kind
    is (A.Kind);
 
@@ -213,10 +266,15 @@ private
      (Index_Type   => Positive,
       Element_Type => Data_Ref);
 
+   package Function_Vectors is new Ada.Containers.Vectors
+     (Index_Type   => Positive,
+      Element_Type => Function_Ref);
+
    type Compilation_Unit_Type is limited record
       Symbols         : GNATCOLL.Symbols.Symbol_Table_Access;
       Aggregate_Types : Aggregate_Type_Vectors.Vector;
       Data_Defs       : Data_Vectors.Vector;
+      Function_Defs   : Function_Vectors.Vector;
    end record;
 
 end QBE.Core;
