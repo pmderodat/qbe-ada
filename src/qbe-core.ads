@@ -115,7 +115,7 @@ package QBE.Core is
    -- Global Data definitions --
    -----------------------------
 
-   type Data_Definition_Ref is private;
+   type Data_Ref is private;
    --  Reference to global data
 
    type Data_Item_Kind is (Symbol, Number, Bytes, Zero_Bytes);
@@ -154,19 +154,19 @@ package QBE.Core is
    function Create
      (Unit : Compilation_Unit;
       Name : String)
-      return Data_Definition_Ref;
+      return Data_Ref;
    --  Create an entry for global data
 
-   procedure Set_Export (D : Data_Definition_Ref; Export : Boolean)
+   procedure Set_Export (D : Data_Ref; Export : Boolean)
       with Inline;
    --  Define whether this data entry is exported to other compilation units
 
-   procedure Set_Items (D : Data_Definition_Ref; Items : Data_Item_Array)
+   procedure Set_Items (D : Data_Ref; Items : Data_Item_Array)
       with Inline;
    --  Assign actual data to D. If called multiple times on the same data
    --  definition , only the last data is considered.
 
-   function Symbol (D : Data_Definition_Ref) return Symbol_Type
+   function Symbol (D : Data_Ref) return Symbol_Type
       with Inline;
    --  Get the symbol name for D
 
@@ -193,14 +193,14 @@ private
 
    type Data_Item_Array_Access is access Data_Item_Array;
 
-   type Data_Definition is record
+   type Data is record
       Unit   : Compilation_Unit;
       Export : Boolean;
       Name   : Symbol_Type;
       Items  : Data_Item_Array_Access;
    end record;
 
-   type Data_Definition_Ref is access Data_Definition;
+   type Data_Ref is access Data;
 
    function Get_Kind (A : Aggregate_Type_Ref) return Aggregate_Type_Kind
    is (A.Kind);
@@ -209,14 +209,14 @@ private
      (Index_Type   => Positive,
       Element_Type => Aggregate_Type_Ref);
 
-   package Data_Definition_Vectors is new Ada.Containers.Vectors
+   package Data_Vectors is new Ada.Containers.Vectors
      (Index_Type   => Positive,
-      Element_Type => Data_Definition_Ref);
+      Element_Type => Data_Ref);
 
    type Compilation_Unit_Type is limited record
       Symbols         : GNATCOLL.Symbols.Symbol_Table_Access;
       Aggregate_Types : Aggregate_Type_Vectors.Vector;
-      Data_Defs       : Data_Definition_Vectors.Vector;
+      Data_Defs       : Data_Vectors.Vector;
    end record;
 
 end QBE.Core;

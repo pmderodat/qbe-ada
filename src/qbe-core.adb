@@ -16,7 +16,7 @@ package body QBE.Core is
      (Aggregate_Item_Array, Aggregate_Item_Array_Access);
 
    procedure Destroy is new Ada.Unchecked_Deallocation
-     (Data_Definition, Data_Definition_Ref);
+     (Data, Data_Ref);
    procedure Destroy is new Ada.Unchecked_Deallocation
      (Data_Item_Array, Data_Item_Array_Access);
 
@@ -117,9 +117,9 @@ package body QBE.Core is
    function Create
      (Unit : Compilation_Unit;
       Name : String)
-      return Data_Definition_Ref
+      return Data_Ref
    is
-      Result : constant Data_Definition_Ref := new Data_Definition'
+      Result : constant Data_Ref := new Data'
         (Unit   => Unit,
          Export => False,
          Name   => Find (Unit.Symbols, Name),
@@ -133,7 +133,7 @@ package body QBE.Core is
    -- Set_Export --
    ----------------
 
-   procedure Set_Export (D : Data_Definition_Ref; Export : Boolean) is
+   procedure Set_Export (D : Data_Ref; Export : Boolean) is
    begin
       D.Export := Export;
    end Set_Export;
@@ -142,7 +142,7 @@ package body QBE.Core is
    -- Set_Items --
    ---------------
 
-   procedure Set_Items (D : Data_Definition_Ref; Items : Data_Item_Array) is
+   procedure Set_Items (D : Data_Ref; Items : Data_Item_Array) is
    begin
       Destroy (D.Items);
       D.Items := new Data_Item_Array'(Items);
@@ -152,7 +152,7 @@ package body QBE.Core is
    -- Symbol --
    ------------
 
-   function Symbol (D : Data_Definition_Ref) return Symbol_Type is
+   function Symbol (D : Data_Ref) return Symbol_Type is
    begin
       return D.Name;
    end Symbol;

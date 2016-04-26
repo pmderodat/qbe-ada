@@ -12,7 +12,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    procedure Dump (C : Constant_Type);
    procedure Dump (ET : Extended_Type);
    procedure Dump (A : Aggregate_Type_Ref);
-   procedure Dump (D : Data_Definition_Ref);
+   procedure Dump (D : Data_Ref);
 
    ---------------
    -- Put_Comma --
@@ -93,7 +93,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    -- Dump --
    ----------
 
-   procedure Dump (D : Data_Definition_Ref) is
+   procedure Dump (D : Data_Ref) is
       Is_First : Boolean := True;
    begin
       if D.Export then

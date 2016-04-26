@@ -7,9 +7,9 @@ with QBE.Core.Dump;
 procedure Data_Defs is
    U  : Compilation_Unit := Create;
 
-   D0 : constant Data_Definition_Ref := Create (U, "d0");
-   D1 : constant Data_Definition_Ref := Create (U, "d1");
-   D2 : constant Data_Definition_Ref := Create (U, "d2");
+   D0 : constant Data_Ref := Create (U, "d0");
+   D1 : constant Data_Ref := Create (U, "d1");
+   D2 : constant Data_Ref := Create (U, "d2");
 
    V1 : constant Data_Item :=
      (Kind     => Symbol,
