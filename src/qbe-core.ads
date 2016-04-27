@@ -210,6 +210,10 @@ package QBE.Core is
    --  Define the list of parameters that F accepts. If not called, the
    --  function is assumed to accept no parameter.
 
+   function Symbol (F : Function_Ref) return Symbol_Type
+      with Inline;
+   --  Get the symbol name for F
+
    ------------------
    -- Basic blocks --
    ------------------

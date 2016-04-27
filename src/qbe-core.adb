@@ -240,6 +240,15 @@ package body QBE.Core is
       F.Next_Temp_Index := Param_Types'Length + 1;
    end Set_Param_Types;
 
+   ------------
+   -- Symbol --
+   ------------
+
+   function Symbol (F : Function_Ref) return Symbol_Type is
+   begin
+      return F.Name;
+   end Symbol;
+
    -----------------
    -- Entry_Block --
    -----------------
