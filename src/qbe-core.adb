@@ -200,7 +200,8 @@ package body QBE.Core is
          Return_Type      => <>,
          Param_Types      => null,
          Blocks           => <>,
-         Next_Block_Index => 1);
+         Next_Block_Index => 1,
+         Next_Temp_Index  => 1);
       Entry_Block : constant Block_Ref := Create (Result);
       pragma Unreferenced (Entry_Block);
    begin
@@ -236,6 +237,7 @@ package body QBE.Core is
    begin
       Destroy (F.Param_Types);
       F.Param_Types := new Signature_Array'(Param_Types);
+      F.Next_Temp_Index := Param_Types'Length + 1;
    end Set_Param_Types;
 
    -----------------
@@ -260,5 +262,33 @@ package body QBE.Core is
       F.Next_Block_Index := F.Next_Block_Index + 1;
       return Result;
    end Create;
+
+   ------------
+   -- Create --
+   ------------
+
+   function Create (F : Function_Ref) return Temp_Ref is
+      Result : constant Temp_Ref := F.Next_Temp_Index;
+   begin
+      F.Next_Temp_Index := F.Next_Temp_Index + 1;
+      return Result;
+   end Create;
+
+   -----------------
+   -- Param_Temps --
+   -----------------
+
+   function Param_Temps (F : Function_Ref) return Temp_Ref_Array is
+      Count  : constant Natural :=
+        (if F.Param_Types = null
+         then 0
+         else F.Param_Types.all'Length);
+      Result : Temp_Ref_Array (1 .. Count);
+   begin
+      for I in Result'Range loop
+         Result (I) := Temp_Ref (I);
+      end loop;
+      return Result;
+   end Param_Temps;
 
 end QBE.Core;

@@ -11,12 +11,14 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    procedure Put_Comma (Is_First : in out Boolean);
    procedure Put_Label (Prefix : String; Id : Positive);
    procedure Put (B : Block_Ref);
+   procedure Put (T : Temp_Ref);
 
    procedure Dump (C : Constant_Type);
    procedure Dump (ET : Extended_Type);
    procedure Dump (S : Signature_Type);
    procedure Dump (A : Aggregate_Type_Ref);
    procedure Dump (D : Data_Ref);
+   procedure Dump (V : Value_Type);
 
    procedure Dump (F : Function_Ref);
    procedure Dump (B : Block_Ref);
@@ -52,6 +54,15 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    procedure Put (B : Block_Ref) is
    begin
       Put_Label ("@b", B.Index);
+   end Put;
+
+   ---------
+   -- Put --
+   ---------
+
+   procedure Put (T : Temp_Ref) is
+   begin
+      Put_Label ("%l", Positive (T));
    end Put;
 
    ----------
@@ -188,7 +199,6 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    ----------
 
    procedure Dump (F : Function_Ref) is
-      Is_First : Boolean := True;
    begin
       if F.Export then
          Put (File, "export ");
@@ -204,24 +214,17 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put (File, +F.Name);
 
       Put (File, '(');
-      if F.Param_Types /= null then
-         declare
-            N : Natural := 0;
-         begin
-            for P of F.Param_Types.all loop
-               Put_Comma (Is_First);
-               Dump (P);
-               declare
-                  N_Image : constant String := Natural'Image (N);
-               begin
-                  Put
-                    (File,
-                     " %l" & N_Image (N_Image'First + 1 ..  N_Image'Last));
-               end;
-               N := N + 1;
-            end loop;
-         end;
-      end if;
+      declare
+         PT       : constant Temp_Ref_Array := Param_Temps (F);
+         Is_First : Boolean := True;
+      begin
+         for I in PT'Range loop
+            Put_Comma (Is_First);
+            Dump (F.Param_Types (I));
+            Put (File, ' ');
+            Put (PT (I));
+         end loop;
+      end;
       Put_Line (File, ")");
 
       Put_Line (File, "{");
@@ -240,6 +243,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put (B);
       New_Line (File);
    end Dump;
+
 
 begin
    for A of Unit.Aggregate_Types loop

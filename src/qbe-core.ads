@@ -224,6 +224,25 @@ package QBE.Core is
    function Create (F : Function_Ref) return Block_Ref;
    --  Create a new basic block for function F and return a reference to it
 
+   -----------------
+   -- Temporaries --
+   -----------------
+
+   type Temp_Ref is private;
+   --  Reference to a temporary in a function
+
+   No_Temp : constant Temp_Ref;
+   --  Special value to mean "no temporary"
+
+   type Temp_Ref_Array is array (Positive range <>) of Temp_Ref;
+
+   function Create (F : Function_Ref) return Temp_Ref;
+   --  Create a new temporary in function F and return a reference to it
+
+   function Param_Temps (F : Function_Ref) return Temp_Ref_Array;
+   --  For each parameter F has, return the corresponding temporary to use in
+   --  F's body.
+
 private
 
    type Symbol_Type is new GNATCOLL.Symbols.Symbol;
@@ -273,6 +292,12 @@ private
      (Index_Type   => Positive,
       Element_Type => Block_Ref);
 
+   type Temp_Ref is new Natural;
+   --  A temporary is currently just an unique identifier with no information
+   --  associated.
+
+   No_Temp : constant Temp_Ref := 0;
+
    type Function_Type is record
       Unit             : Compilation_Unit;
       Export           : Boolean;
@@ -283,6 +308,11 @@ private
 
       Blocks           : Block_Vectors.Vector;
       Next_Block_Index : Positive;
+
+      Next_Temp_Index  : Temp_Ref;
+      --  Index for the next temporary we will create for this function,
+      --  incremented everytime we create a new temporary. Each parameter has
+      --  its own temporary starting from 1.
    end record;
 
    type Function_Ref is access Function_Type;
