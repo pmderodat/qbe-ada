@@ -265,7 +265,8 @@ package body QBE.Core is
    function Create (F : Function_Ref) return Block_Ref is
       Result : constant Block_Ref := new Block'
         (Func  => F,
-         Index => F.Next_Block_Index);
+         Index => F.Next_Block_Index,
+         Phis  => <>);
    begin
       F.Blocks.Append (Result);
       F.Next_Block_Index := F.Next_Block_Index + 1;
@@ -299,5 +300,23 @@ package body QBE.Core is
       end loop;
       return Result;
    end Param_Temps;
+
+   -------------
+   -- Add_Phi --
+   -------------
+
+   procedure Add_Phi
+     (B         : Block_Ref;
+      Dest      : Temp_Ref;
+      Dest_Type : Base_Type;
+      Values    : Phi_Association_Array)
+   is
+      Phi : constant Phi_Type :=
+        (Dest      => Dest,
+         Dest_Type => Dest_Type,
+         Values    => new Phi_Association_Array'(Values));
+   begin
+      B.Phis.Append (Phi);
+   end Add_Phi;
 
 end QBE.Core;

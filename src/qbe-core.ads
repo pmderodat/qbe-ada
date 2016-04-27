@@ -247,6 +247,45 @@ package QBE.Core is
    --  For each parameter F has, return the corresponding temporary to use in
    --  F's body.
 
+   ------------------
+   -- Instructions --
+   ------------------
+
+   type Value_Kind is (Constant_Value, Temp_Value);
+   type Value_Type (Kind : Value_Kind := Constant_Value) is record
+      case Kind is
+         when Constant_Value =>
+            C : Constant_Type;
+         when Temp_Value =>
+            T : Temp_Ref;
+      end case;
+   end record;
+   --  Value to be used as an instruction operand
+
+   function Value (C : Constant_Type) return Value_Type is
+     ((Kind => Constant_Value, C => C));
+   function Value (S : Symbol_Type) return Value_Type is
+     ((Kind => Constant_Value, C => (Kind => Symbol, Name => S)));
+   function Value (T : Temp_Ref) return Value_Type is
+     ((Kind => Temp_Value, T => T));
+
+   type Phi_Association is record
+      Block : Block_Ref;
+      Value : Value_Type;
+   end record;
+   --  Basic block/value association for PHI nodes input
+
+   type Phi_Association_Array is array (Positive range <>) of Phi_Association;
+
+   procedure Add_Phi
+     (B         : Block_Ref;
+      Dest      : Temp_Ref;
+      Dest_Type : Base_Type;
+      Values    : Phi_Association_Array);
+   --  Add a new PHI node to B. This node computes the value in Values that
+   --  matches the previously executed basic block. It stores this value in the
+   --  Dest temporary with the Dest_Type basic type.
+
 private
 
    type Symbol_Type is new GNATCOLL.Symbols.Symbol;
@@ -281,6 +320,24 @@ private
 
    type Signature_Array_Access is access Signature_Array;
 
+   type Phi_Association_Array_Access is access Phi_Association_Array;
+
+   type Temp_Ref is new Natural;
+   --  A temporary is currently just an unique identifier with no information
+   --  associated.
+
+   No_Temp : constant Temp_Ref := 0;
+
+   type Phi_Type is record
+      Dest      : Temp_Ref;
+      Dest_Type : Base_Type;
+      Values    : Phi_Association_Array_Access;
+   end record;
+
+   package Phi_Vectors is new Ada.Containers.Vectors
+     (Index_Type   => Positive,
+      Element_Type => Phi_Type);
+
    type Block is record
       Func  : Function_Ref;
       --  Function in which this basic block is defined
@@ -288,6 +345,9 @@ private
       Index : Positive;
       --  Function-specific index for this basic block. We use it to define a
       --  name for this block.
+
+      Phis  : Phi_Vectors.Vector;
+      --  Collection of PHI nodes this block contains
    end record;
 
    type Block_Ref is access Block;
@@ -295,12 +355,6 @@ private
    package Block_Vectors is new Ada.Containers.Vectors
      (Index_Type   => Positive,
       Element_Type => Block_Ref);
-
-   type Temp_Ref is new Natural;
-   --  A temporary is currently just an unique identifier with no information
-   --  associated.
-
-   No_Temp : constant Temp_Ref := 0;
 
    type Function_Type is record
       Unit             : Compilation_Unit;

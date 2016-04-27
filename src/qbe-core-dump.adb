@@ -198,6 +198,18 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    -- Dump --
    ----------
 
+   procedure Dump (V : Value_Type) is
+   begin
+      case V.Kind is
+         when Constant_Value => Dump (V.C);
+         when Temp_Value     => Put (V.T);
+      end case;
+   end Dump;
+
+   ----------
+   -- Dump --
+   ----------
+
    procedure Dump (F : Function_Ref) is
    begin
       if F.Export then
@@ -242,8 +254,25 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
    begin
       Put (B);
       New_Line (File);
-   end Dump;
 
+      for Phi of B.Phis loop
+         Put (Phi.Dest);
+         Put (File, " =");
+         Dump (Phi.Dest_Type);
+         Put (File, ' ');
+         declare
+            Is_First : Boolean := True;
+         begin
+            for Assoc of Phi.Values.all loop
+               Put_Comma (Is_First);
+               Put (Assoc.Block);
+               Put (File, ' ');
+               Dump (Assoc.Value);
+            end loop;
+         end;
+         New_Line (File);
+      end loop;
+   end Dump;
 
 begin
    for A of Unit.Aggregate_Types loop
