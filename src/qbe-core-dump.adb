@@ -7,14 +7,19 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
 
    function "+" (S : Symbol_Type) return String is
      (GNATCOLL.Symbols.Get (GNATCOLL.Symbols.Symbol (S)).all);
+
    procedure Put_Comma (Is_First : in out Boolean);
+   procedure Put_Label (Prefix : String; Id : Positive);
+   procedure Put (B : Block_Ref);
 
    procedure Dump (C : Constant_Type);
    procedure Dump (ET : Extended_Type);
    procedure Dump (S : Signature_Type);
    procedure Dump (A : Aggregate_Type_Ref);
    procedure Dump (D : Data_Ref);
+
    procedure Dump (F : Function_Ref);
+   procedure Dump (B : Block_Ref);
 
    ---------------
    -- Put_Comma --
@@ -28,6 +33,26 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
          Put (File, ", ");
       end if;
    end Put_Comma;
+
+   ---------------
+   -- Put_Label --
+   ---------------
+
+   procedure Put_Label (Prefix : String; Id : Positive) is
+      Id_Image : constant String := Positive'Image (Id);
+   begin
+      Put
+        (File, Prefix & Id_Image (Id_Image'First + 1 .. Id_Image'Last));
+   end Put_Label;
+
+   ---------
+   -- Put --
+   ---------
+
+   procedure Put (B : Block_Ref) is
+   begin
+      Put_Label ("@b", B.Index);
+   end Put;
 
    ----------
    -- Dump --
@@ -200,7 +225,20 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put_Line (File, ")");
 
       Put_Line (File, "{");
+      for B of F.Blocks loop
+         Dump (B);
+      end loop;
       Put_Line (File, "}");
+   end Dump;
+
+   ----------
+   -- Dump --
+   ----------
+
+   procedure Dump (B : Block_Ref) is
+   begin
+      Put (B);
+      New_Line (File);
    end Dump;
 
 begin

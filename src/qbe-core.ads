@@ -210,6 +210,20 @@ package QBE.Core is
    --  Define the list of parameters that F accepts. If not called, the
    --  function is assumed to accept no parameter.
 
+   ------------------
+   -- Basic blocks --
+   ------------------
+
+   type Block_Ref is private;
+   --  Reference to a basic block in a function
+
+   function Entry_Block (F : Function_Ref) return Block_Ref
+      with Inline;
+   --  Return the entry basic block for function F
+
+   function Create (F : Function_Ref) return Block_Ref;
+   --  Create a new basic block for function F and return a reference to it
+
 private
 
    type Symbol_Type is new GNATCOLL.Symbols.Symbol;
@@ -244,13 +258,31 @@ private
 
    type Signature_Array_Access is access Signature_Array;
 
+   type Block is record
+      Func  : Function_Ref;
+      --  Function in which this basic block is defined
+
+      Index : Positive;
+      --  Function-specific index for this basic block. We use it to define a
+      --  name for this block.
+   end record;
+
+   type Block_Ref is access Block;
+
+   package Block_Vectors is new Ada.Containers.Vectors
+     (Index_Type   => Positive,
+      Element_Type => Block_Ref);
+
    type Function_Type is record
-      Unit            : Compilation_Unit;
-      Export          : Boolean;
-      Name            : Symbol_Type;
-      Has_Return_Type : Boolean;
-      Return_Type     : Signature_Type;
-      Param_Types     : Signature_Array_Access;
+      Unit             : Compilation_Unit;
+      Export           : Boolean;
+      Name             : Symbol_Type;
+      Has_Return_Type  : Boolean;
+      Return_Type      : Signature_Type;
+      Param_Types      : Signature_Array_Access;
+
+      Blocks           : Block_Vectors.Vector;
+      Next_Block_Index : Positive;
    end record;
 
    type Function_Ref is access Function_Type;

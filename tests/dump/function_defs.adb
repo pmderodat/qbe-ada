@@ -17,12 +17,16 @@ procedure Function_Defs is
    F2 : constant Function_Ref := Create (U, "f2");
    F3 : constant Function_Ref := Create (U, "f3");
 
+   B : Block_Ref;
+
    F  : File_Type := Standard_Output;
 begin
    Set_Alignment (A, 4);
    Set_Size (A, 16);
 
    Set_Export (F0, True);
+   B := Create (F0);
+
    Set_Return_Type (F1, S_Word);
    Set_Param_Types (F2, (1 => S_Long));
    Set_Param_Types (F3, (S_Double, S_A));

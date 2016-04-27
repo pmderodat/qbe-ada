@@ -25,6 +25,8 @@ package body QBE.Core is
    procedure Destroy is new Ada.Unchecked_Deallocation
      (Signature_Array, Signature_Array_Access);
 
+   procedure Destroy (B : in out Block_Ref);
+
    ------------
    -- Create --
    ------------
@@ -32,6 +34,17 @@ package body QBE.Core is
    function Create return Compilation_Unit is
      (new Compilation_Unit_Type'(Symbols => Allocate,
                                  others  => <>));
+
+   -------------
+   -- Destroy --
+   -------------
+
+   procedure Destroy (B : in out Block_Ref) is
+      procedure Destroy is new Ada.Unchecked_Deallocation
+        (Block, Block_Ref);
+   begin
+      Destroy (B);
+   end Destroy;
 
    -------------
    -- Destroy --
@@ -61,6 +74,9 @@ package body QBE.Core is
 
       for F of Unit.Function_Defs loop
          Destroy (F.Param_Types);
+         for B of F.Blocks loop
+            Destroy (B);
+         end loop;
          Destroy (F);
       end loop;
 
@@ -177,12 +193,16 @@ package body QBE.Core is
       return Function_Ref
    is
       Result : constant Function_Ref := new Function_Type'
-        (Unit            => Unit,
-         Export          => False,
-         Name            => Find (Unit.Symbols, Name),
-         Has_Return_Type => False,
-         Return_Type     => <>,
-         Param_Types     => null);
+        (Unit             => Unit,
+         Export           => False,
+         Name             => Find (Unit.Symbols, Name),
+         Has_Return_Type  => False,
+         Return_Type      => <>,
+         Param_Types      => null,
+         Blocks           => <>,
+         Next_Block_Index => 1);
+      Entry_Block : constant Block_Ref := Create (Result);
+      pragma Unreferenced (Entry_Block);
    begin
       Unit.Function_Defs.Append (Result);
       return Result;
@@ -217,5 +237,28 @@ package body QBE.Core is
       Destroy (F.Param_Types);
       F.Param_Types := new Signature_Array'(Param_Types);
    end Set_Param_Types;
+
+   -----------------
+   -- Entry_Block --
+   -----------------
+
+   function Entry_Block (F : Function_Ref) return Block_Ref is
+   begin
+      return F.Blocks.First_Element;
+   end Entry_Block;
+
+   ------------
+   -- Create --
+   ------------
+
+   function Create (F : Function_Ref) return Block_Ref is
+      Result : constant Block_Ref := new Block'
+        (Func  => F,
+         Index => F.Next_Block_Index);
+   begin
+      F.Blocks.Append (Result);
+      F.Next_Block_Index := F.Next_Block_Index + 1;
+      return Result;
+   end Create;
 
 end QBE.Core;
