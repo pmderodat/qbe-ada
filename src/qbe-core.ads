@@ -18,6 +18,16 @@ package QBE.Core is
    -- Main entities --
    -------------------
 
+   type Extended_Type is (Word, Long, Simple, Double, Half, Byte);
+   --  Scalar types
+
+   subtype Base_Type is Extended_Type range Word .. Double;
+   --  Subset of scalar types that can be used as temporaries in the IL
+
+   subtype Address_Type is Extended_Type range Word .. Long;
+   --  Subset of scalar types that are candidates to represent addresses in the
+   --  generated programs.
+
    type Compilation_Unit is private;
    --  Container for all entities declared in a compilation unit. This owns all
    --  these entities, so users must not keep references to them when the
@@ -26,10 +36,13 @@ package QBE.Core is
    --  Note that entities created with one compilation unit must not be used
    --  with another unit.
 
-   function Create return Compilation_Unit
+   function Create (Address_Size : Address_Type) return Compilation_Unit
       with Inline;
-   --  Create a new compilation unit. Once done with this unit, its resources
-   --  must be deallocated using Destroy.
+   --  Create a new compilation unit. Address_Size indicates the type used to
+   --  represent addresses in the generated program.
+   --
+   --  Once done with this unit, its resources must be deallocated using
+   --  Destroy.
 
    procedure Destroy (Unit : in out Compilation_Unit)
       with Inline;
@@ -41,12 +54,6 @@ package QBE.Core is
    function Symbol (Unit : Compilation_Unit; Name : String) return Symbol_Type
       with Inline;
    --  Get the symbol corresponding to some name
-
-   type Extended_Type is (Word, Long, Simple, Double, Half, Byte);
-   --  Scalar types
-
-   subtype Base_Type is Extended_Type range Word .. Double;
-   --  Subset of scalar type that can be used as temporaries in the IL
 
    type Constant_Kind is (Decimal, Single, Double, Symbol);
    type Constant_Type (Kind : Constant_Kind := Decimal) is record
@@ -425,6 +432,7 @@ private
       Element_Type => Function_Ref);
 
    type Compilation_Unit_Type is limited record
+      Address_Size    : Address_Type;
       Symbols         : GNATCOLL.Symbols.Symbol_Table_Access;
       Aggregate_Types : Aggregate_Type_Vectors.Vector;
       Data_Defs       : Data_Vectors.Vector;

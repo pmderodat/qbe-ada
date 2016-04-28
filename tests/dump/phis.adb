@@ -6,7 +6,7 @@ with QBE.Core.Dump;
 
 procedure Phis is
    F      : File_Type := Standard_Output;
-   U      : Compilation_Unit := Create;
+   U      : Compilation_Unit := Create (Long);
    B1, B2 : Block_Ref;
    F1     : constant Function_Ref := Create (U, "f1");
 begin

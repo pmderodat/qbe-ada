@@ -34,9 +34,10 @@ package body QBE.Core is
    -- Create --
    ------------
 
-   function Create return Compilation_Unit is
-     (new Compilation_Unit_Type'(Symbols => Allocate,
-                                 others  => <>));
+   function Create (Address_Size : Address_Type) return Compilation_Unit is
+     (new Compilation_Unit_Type'(Address_Size => Address_Size,
+                                 Symbols      => Allocate,
+                                 others       => <>));
 
    -------------
    -- Destroy --

@@ -5,7 +5,7 @@ with QBE.Core; use QBE.Core;
 with QBE.Core.Dump;
 
 procedure Function_Defs is
-   U  : Compilation_Unit := Create;
+   U  : Compilation_Unit := Create (Long);
    A  : constant Aggregate_Type_Ref := Create (U, Opaque, "t0");
    S_Word   : constant Signature_Type := (Kind => Base,      T => Word);
    S_Long   : constant Signature_Type := (Kind => Base,      T => Long);

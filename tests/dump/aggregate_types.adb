@@ -4,7 +4,7 @@ with QBE.Core; use QBE.Core;
 with QBE.Core.Dump;
 
 procedure Aggregate_Types is
-   U  : Compilation_Unit := Create;
+   U  : Compilation_Unit := Create (Long);
 
    T0 : constant Aggregate_Type_Ref := Create (U, Regular, "t0");
    T1 : constant Aggregate_Type_Ref := Create (U, Regular, "t1");

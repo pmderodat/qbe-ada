@@ -5,7 +5,7 @@ with QBE.Core; use QBE.Core;
 with QBE.Core.Dump;
 
 procedure Data_Defs is
-   U  : Compilation_Unit := Create;
+   U  : Compilation_Unit := Create (Long);
 
    D0 : constant Data_Ref := Create (U, "d0");
    D1 : constant Data_Ref := Create (U, "d1");

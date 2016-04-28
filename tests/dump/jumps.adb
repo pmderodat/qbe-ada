@@ -6,7 +6,7 @@ with QBE.Core.Dump;
 
 procedure Jumps is
    F              : File_Type := Standard_Output;
-   U              : Compilation_Unit := Create;
+   U              : Compilation_Unit := Create (Long);
    F1             : constant Function_Ref := Create (U, "f1");
    B1, B2, B3, B4 : Block_Ref;
 begin
