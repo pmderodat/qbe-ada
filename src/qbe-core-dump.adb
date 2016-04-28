@@ -90,7 +90,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put (File, (case ET is
                   when Word   => 'w',
                   when Long   => 'l',
-                  when Simple => 's',
+                  when Single => 's',
                   when Double => 'd',
                   when Half   => 'h',
                   when Byte   => 'b'));

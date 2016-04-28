@@ -21,7 +21,7 @@ begin
    begin
       Add_Phi (B2, T1, Word, (1 => (B1, Value (T1))));
       Add_Phi
-        (B2, T2, Simple,
+        (B2, T2, Single,
          ((B1, Value (T1)),
           (B2, Value (Symbol (F1)))));
    end;

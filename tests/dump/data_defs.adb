@@ -13,7 +13,7 @@ procedure Data_Defs is
 
    V1 : constant Data_Item :=
      (Kind     => Symbol,
-     Item_Kind => Simple,
+     Item_Kind => Single,
       Name     => Symbol (U, "s1"),
       Offset   => 0);
    V2 : constant Data_Item :=

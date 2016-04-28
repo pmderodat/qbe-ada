@@ -18,7 +18,7 @@ package QBE.Core is
    -- Main entities --
    -------------------
 
-   type Extended_Type is (Word, Long, Simple, Double, Half, Byte);
+   type Extended_Type is (Word, Long, Single, Double, Half, Byte);
    --  Scalar types
 
    subtype Base_Type is Extended_Type range Word .. Double;
