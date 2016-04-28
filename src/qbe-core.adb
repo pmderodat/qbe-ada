@@ -21,6 +21,9 @@ package body QBE.Core is
      (Data_Item_Array, Data_Item_Array_Access);
 
    procedure Destroy is new Ada.Unchecked_Deallocation
+     (Phi_Association_Array, Phi_Association_Array_Access);
+
+   procedure Destroy is new Ada.Unchecked_Deallocation
      (Function_Type, Function_Ref);
    procedure Destroy is new Ada.Unchecked_Deallocation
      (Signature_Array, Signature_Array_Access);
@@ -43,6 +46,9 @@ package body QBE.Core is
       procedure Destroy is new Ada.Unchecked_Deallocation
         (Block, Block_Ref);
    begin
+      for Phi of B.Phis loop
+         Destroy (Phi.Values);
+      end loop;
       Destroy (B);
    end Destroy;
 
