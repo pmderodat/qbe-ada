@@ -286,6 +286,22 @@ package QBE.Core is
    --  matches the previously executed basic block. It stores this value in the
    --  Dest temporary with the Dest_Type basic type.
 
+   procedure Set_Jump (B : Block_Ref; Dest : Block_Ref);
+   --  Make B end with an unconditional jump to Dest
+
+   procedure Set_Branch
+     (B                             : Block_Ref;
+      Condition                     : Value_Type;
+      Branch_Dest, Fallthrough_Dest : Block_Ref);
+   --  Make B end with a conditional jump. If Condition is non-zero, it will
+   --  jump to Branch_Dest, otherwise it will jump to Fallthrough_Dest.
+
+   procedure Set_Ret (B : Block_Ref);
+   --  Make B end with a return instruction with no value
+
+   procedure Set_Ret (B : Block_Ref; Value : Value_Type);
+   --  Make B en with a return instruction with Value
+
 private
 
    type Symbol_Type is new GNATCOLL.Symbols.Symbol;
@@ -338,6 +354,21 @@ private
      (Index_Type   => Positive,
       Element_Type => Phi_Type);
 
+   type Jump_Kind is (Jump, Branch, Ret, Ret_Value);
+   type Jump_Type (Kind : Jump_Kind := Ret) is record
+      case Kind is
+         when Jump =>
+            Dest                          : Block_Ref;
+         when Branch =>
+            Condition                     : Value_Type;
+            Branch_Dest, Fallthrough_Dest : Block_Ref;
+         when Ret =>
+            null;
+         when Ret_Value =>
+            Value                         : Value_Type;
+      end case;
+   end record;
+
    type Block is record
       Func  : Function_Ref;
       --  Function in which this basic block is defined
@@ -348,6 +379,9 @@ private
 
       Phis  : Phi_Vectors.Vector;
       --  Collection of PHI nodes this block contains
+
+      Jump  : Jump_Type;
+      --  Control-flow behavior for this block at the end of its execution
    end record;
 
    type Block_Ref is access Block;

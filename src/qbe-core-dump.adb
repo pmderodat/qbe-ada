@@ -272,6 +272,25 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
          end;
          New_Line (File);
       end loop;
+
+      case B.Jump.Kind is
+         when Jump =>
+            Put (File, "jmp ");
+            Put (B.Jump.Dest);
+         when Branch =>
+            Put (File, "jnz ");
+            Dump (B.Jump.Condition);
+            Put (File, ", ");
+            Put (B.Jump.Branch_Dest);
+            Put (File, ", ");
+            Put (B.Jump.Fallthrough_Dest);
+         when Ret =>
+            Put (File, "ret");
+         when Ret_Value =>
+            Put (File, "ret ");
+            Dump (B.Jump.Value);
+      end case;
+      New_Line (File);
    end Dump;
 
 begin

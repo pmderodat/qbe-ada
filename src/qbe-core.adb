@@ -272,7 +272,8 @@ package body QBE.Core is
       Result : constant Block_Ref := new Block'
         (Func  => F,
          Index => F.Next_Block_Index,
-         Phis  => <>);
+         Phis  => <>,
+         Jump  => <>);
    begin
       F.Blocks.Append (Result);
       F.Next_Block_Index := F.Next_Block_Index + 1;
@@ -324,5 +325,48 @@ package body QBE.Core is
    begin
       B.Phis.Append (Phi);
    end Add_Phi;
+
+   --------------
+   -- Set_Jump --
+   --------------
+
+   procedure Set_Jump (B : Block_Ref; Dest : Block_Ref) is
+   begin
+      B.Jump := (Kind => Jump, Dest => Dest);
+   end Set_Jump;
+
+   ----------------
+   -- Set_Branch --
+   ----------------
+
+   procedure Set_Branch
+     (B                             : Block_Ref;
+      Condition                     : Value_Type;
+      Branch_Dest, Fallthrough_Dest : Block_Ref)
+   is
+   begin
+      B.Jump := (Kind             => Branch,
+                 Condition        => Condition,
+                 Branch_Dest      => Branch_Dest,
+                 Fallthrough_Dest => Fallthrough_Dest);
+   end Set_Branch;
+
+   -------------
+   -- Set_Ret --
+   -------------
+
+   procedure Set_Ret (B : Block_Ref) is
+   begin
+      B.Jump := (Kind => Ret);
+   end Set_Ret;
+
+   -------------
+   -- Set_Ret --
+   -------------
+
+   procedure Set_Ret (B : Block_Ref; Value : Value_Type) is
+   begin
+      B.Jump := (Ret_Value, Value => Value);
+   end Set_Ret;
 
 end QBE.Core;

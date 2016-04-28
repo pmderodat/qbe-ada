@@ -4,7 +4,8 @@ project P is
    for Languages use ("Ada");
    for Object_Dir use "obj";
    for Main use
-     ("aggregate_types.adb", "data_defs.adb", "function_defs.adb", "phis.adb");
+     ("aggregate_types.adb", "data_defs.adb", "function_defs.adb", "jumps.adb",
+      "phis.adb");
    package Compiler is
       for Default_Switches ("Ada") use ("-g");
    end Compiler;
