@@ -22,6 +22,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
 
    procedure Dump (F : Function_Ref);
    procedure Dump (B : Block_Ref);
+   procedure Dump (I : Instruction_Type);
 
    ---------------
    -- Put_Comma --
@@ -273,6 +274,11 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
          New_Line (File);
       end loop;
 
+      for I of B.Insns loop
+         Dump (I);
+         New_Line (File);
+      end loop;
+
       case B.Jump.Kind is
          when Jump =>
             Put (File, "jmp ");
@@ -289,6 +295,146 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
          when Ret_Value =>
             Put (File, "ret ");
             Dump (B.Jump.Value);
+      end case;
+      New_Line (File);
+   end Dump;
+
+   ----------
+   -- Dump --
+   ----------
+
+   procedure Dump (I : Instruction_Type) is
+      Type_Char : constant array (Extended_Type) of Character := "wlsdhb";
+   begin
+      case I.Kind is
+         when Store =>
+            Put (File, "store" & Type_Char (I.Store_Type) & ' ');
+            Dump (I.Value);
+            Put (File, ", ");
+            Dump (I.Store_Addr);
+
+         when others =>
+            Put (I.Dest);
+            Put (File, " =" & Type_Char (I.Dest_Type) & ' ');
+
+            case I.Kind is
+               when Store => raise Program_Error;
+
+               when Load =>
+                  Put (File, "load" & Type_Char (I.Load_Type));
+                  if I.Load_Type in Word | Half | Byte then
+                     Put (File, (if I.Load_Sign_Extend then 's' else 'u'));
+                  end if;
+                  Put (File, ' ');
+                  Dump (I.Load_Addr);
+
+               when Copy =>
+                  Put (File, "copy ");
+                  Dump (I.Copy_Value);
+
+               when Alloc =>
+                  declare
+                     A : constant String :=
+                       (case I.Alignment is
+                        when Alloc4 => "4",
+                        when Alloc8 => "8",
+                        when Alloc16 => "16");
+                  begin
+                     Put (File, "alloc" & A & ' ');
+                  end;
+                  Dump (I.Size);
+
+               when Arith | Integer_Comparison | Float_Comparison =>
+                  case I.Kind is
+                     when Arith =>
+                        Put (File, (case I.Arith_Kind is
+                                 when Add  => "add",
+                                 when Sub  => "sub",
+                                 when Div  => "div",
+                                 when Mul  => "mul",
+                                 when Udiv => "udiv",
+                                 when Srem => "srem",
+                                 when Urem => "urem",
+                                 when Bor  => "or",
+                                 when Bxor => "xor",
+                                 when Band => "and",
+                                 when Sar  => "sar",
+                                 when Shr  => "shr",
+                                 when Shl  => "shl"));
+                     when Integer_Comparison =>
+                        declare
+                           C : constant String :=
+                             (case I.Int_Comp_Kind is
+                              when EQ  => "eq",
+                              when NE  => "ne",
+                              when SLE => "sle",
+                              when SLT => "slt",
+                              when SGE => "sge",
+                              when SGT => "sgt",
+                              when ULE => "ule",
+                              when ULT => "ult",
+                              when UGE => "uge",
+                              when UGT => "ugt");
+                        begin
+                           Put (File, 'c' & C & Type_Char (I.Int_Comp_Op));
+                        end;
+                     when Float_Comparison =>
+                        declare
+                           C : constant String :=
+                             (case I.Float_Comp_Kind is
+                              when EQ => "eq",
+                              when NE => "ne",
+                              when LE => "sle",
+                              when LT => "slt",
+                              when GE => "sge",
+                              when GT => "sgt",
+                              when O  => "o",
+                              when UO => "uo");
+                        begin
+                           Put (File, 'c' & C & Type_Char (I.Float_Comp_Op));
+                        end;
+                     when others => raise Program_Error;
+                  end case;
+                  Put (File, ' ');
+                  Dump (I.Left);
+                  Put (File, ", ");
+                  Dump (I.Right);
+
+               when Ext =>
+                  Put (File, "ext");
+                  case I.Ext_Src_Type is
+                     when Word | Half | Byte =>
+                        Put (File, (if I.Ext_Sign_Extend then 's' else 'u'));
+                        Put (File, Type_Char (I.Ext_Src_Type));
+                     when Single =>
+                        Put (File, 's');
+                     when others =>
+                        raise Program_Error;
+                  end case;
+                  Put (File, ' ');
+                  Dump (I.Ext_Src);
+
+               when Trunc =>
+                  Put (File, "truncd ");
+                  Dump (I.Trunc_Src);
+
+               when Conversion =>
+                  declare
+                     To_C : Character := 'i';
+                  begin
+                     if I.Conv_Src_Type in Word | Long then
+                        Put (File, 's');
+                        To_C := 'f';
+                     end if;
+                     Put
+                       (File, Type_Char (I.Conv_Src_Type) & "to" & To_C & ' ');
+                     Dump (I.Conv_Src);
+                  end;
+
+               when Cast =>
+                  Put (File, "cast ");
+                  Dump (I.Cast_Src);
+            end case;
       end case;
       New_Line (File);
    end Dump;

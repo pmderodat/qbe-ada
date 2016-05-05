@@ -24,9 +24,15 @@ package QBE.Core is
    subtype Base_Type is Extended_Type range Word .. Double;
    --  Subset of scalar types that can be used as temporaries in the IL
 
+   subtype Small_Scalar_Type is Extended_Type range Half .. Byte;
+   --  Subset of scalar types that may involve sign extension in functions
+
    subtype Address_Type is Extended_Type range Word .. Long;
    --  Subset of scalar types that are candidates to represent addresses in the
    --  generated programs.
+
+   subtype Float_Type is Extended_Type range Single .. Double;
+   --  Subset of base types that hold floating point values
 
    type Compilation_Unit is private;
    --  Container for all entities declared in a compilation unit. This owns all
@@ -271,6 +277,8 @@ package QBE.Core is
 
    function Value (C : Constant_Type) return Value_Type is
      ((Kind => Constant_Value, C => C));
+   function Value (U : Interfaces.Unsigned_64) return Value_Type is
+     ((Kind => Constant_Value, C => (Kind => Decimal, Value => U)));
    function Value (S : Symbol_Type) return Value_Type is
      ((Kind => Constant_Value, C => (Kind => Symbol, Name => S)));
    function Value (T : Temp_Ref) return Value_Type is
@@ -292,6 +300,167 @@ package QBE.Core is
    --  Add a new PHI node to B. This node computes the value in Values that
    --  matches the previously executed basic block. It stores this value in the
    --  Dest temporary with the Dest_Type basic type.
+
+   procedure Add_Copy
+     (B         : Block_Ref;
+      Value     : Value_Type;
+      Dest_Type : Base_Type;
+      Dest      : Temp_Ref);
+   --  Append an instruction to B that copies Value to the Dest temporary
+
+   type Arith_Insn_Kind is
+     (Add, Sub, Div, Mul, Udiv, Srem, Urem, Bor, Bxor, Band, Sar, Shr, Shl);
+   --  Set of available arithmetic instructions
+
+   procedure Add_Arith
+     (B           : Block_Ref;
+      Kind        : Arith_Insn_Kind;
+      Left, Right : Value_Type;
+      Dest_Type   : Base_Type;
+      Dest        : Temp_Ref);
+   --  Append an arithmetic instruction to B. This instruction has the form:
+   --
+   --     Dest := Dest_Type (Left) Kind (Right)
+
+   procedure Add_Store
+     (B          : Block_Ref;
+      Store_Type : Extended_Type;
+      Value      : Value_Type;
+      Address    : Value_Type);
+   --  Append a store instruction to B. Store_Type indicates the type (and thus
+   --  the size) of the value that is stored in memory (i.e. Value). Address
+   --  indicates the memory location for the store.
+
+   procedure Add_Load
+     (B         : Block_Ref;
+      Address   : Value_Type;
+      Dest_Type : Address_Type;
+      Dest      : Temp_Ref);
+   --  Append a load instruction to B. Address indicates the memory location
+   --  for the load. Dest_Type indicates the type (and thus the size) of the
+   --  value that is loaded. The value is then stored into the Dest temporary.
+
+   procedure Add_Load
+     (B           : Block_Ref;
+      Address     : Value_Type;
+      Load_Type   : Small_Scalar_Type;
+      Sign_Extend : Boolean;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref);
+   --  Append a load instruction to B. Address indicates the memory location
+   --  for the load. Load_Type indicates the type (and thus the size) of the
+   --  value that is loaded while Dest_Type indicates the type of the temporary
+   --  where the value is loaded. If Sign_Extend is true, this value is
+   --  sign-extended to fit Dest, it is zero-extended otherwise.
+
+   type Alloc_Alignment is (Alloc4, Alloc8, Alloc16);
+   --  Alignment constraint associated to an Alloc instruction
+
+   procedure Add_Alloc
+     (B         : Block_Ref;
+      Alignment : Alloc_Alignment;
+      Size      : Value_Type;
+      Dest      : Temp_Ref);
+   --  Append a stack allocation instruction to B. Alignment specifies the
+   --  required alignment for the allocated memory. Size indicates the number
+   --  of bytes to allocate. The address of the first allocated byte is stored
+   --  in Dest.
+
+   type Integer_Comparison_Kind is
+     (EQ, NE, SLE, SLT, SGE, SGT, ULE, ULT, UGE, UGT);
+   --  Kind for an integer comparison instruction
+
+   procedure Add_Comparison
+     (B            : Block_Ref;
+      Kind         : Integer_Comparison_Kind;
+      Operand_Type : Address_Type;
+      Left, Right  : Value_Type;
+      Dest_Type    : Address_Type;
+      Dest         : Temp_Ref);
+   --  Append an integer comparison instruction to B. Kind specifies the nature
+   --  of the comparison while Operand_Type specifies the type of the Left and
+   --  Right operands. Dest_Type and Dest specify the destination for the
+   --  comparison result.
+
+   type Float_Comparison_Kind is (EQ, NE, LE, LT, GE, GT, O, UO);
+   --  Kind for a floating point comparison instruction
+
+   procedure Add_Comparison
+     (B            : Block_Ref;
+      Kind         : Float_Comparison_Kind;
+      Operand_Type : Float_Type;
+      Left, Right  : Value_Type;
+      Dest_Type    : Address_Type;
+      Dest         : Temp_Ref);
+   --  Append a floating point comparison instruction to B. Kind specifies the
+   --  nature of the comparison while Operand_Type specifies the type of the
+   --  Left and Right operands. Dest_Type and Dest specify the destination for
+   --  the comparison result.
+
+   procedure Add_Ext
+     (B           : Block_Ref;
+      Source_Type : Small_Scalar_Type;
+      Source      : Value_Type;
+      Sign_Extend : Boolean;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref);
+   --  Append an integer extension instruction to B. This extends Source (of
+   --  type Source_Type) to type Dest_Type, performing sign-extention if
+   --  Sign_Extend is true or zero-extension otherwise. Store the result in
+   --  Dest.
+
+   procedure Add_Ext_Word
+     (B           : Block_Ref;
+      Source      : Value_Type;
+      Sign_Extend : Boolean;
+      Dest        : Temp_Ref);
+   --  Append an integer extension instruction to B. This extends Source (of
+   --  type Word) to a Long value, performing sign-extension if Sign_Extend is
+   --  true or zero-extension otherwise. Store the result in Dest.
+
+   procedure Add_Ext_Single
+     (B      : Block_Ref;
+      Source : Value_Type;
+      Dest   : Temp_Ref);
+   --  Append a float extension instruction to B. This extends Source (of type
+   --  Single) to a Double value. Store the result in Dest.
+
+   procedure Add_Trunc_Double
+     (B      : Block_Ref;
+      Source : Value_Type;
+      Dest   : Temp_Ref);
+   --  Append a float truncation instruction to B. This truncates Source (of
+   --  type Double) to a Single value. Store the result in Dest.
+
+   procedure Add_To_Signed
+     (B : Block_Ref;
+      Source_Type : Float_Type;
+      Source      : Value_Type;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref);
+   --  Append a float-to-signed-int conversion instruction to B. This converts
+   --  Source (of type Source_Type) into a value of type Dest_Type. Store the
+   --  result in Dest.
+
+   procedure Add_To_Float
+     (B : Block_Ref;
+      Source_Type : Address_Type;
+      Source      : Value_Type;
+      Dest_Type   : Float_Type;
+      Dest        : Temp_Ref);
+   --  Append a signed-int-to-float conversion instruction to B. This converts
+   --  Source (of type Source_Type) into a value of type Dest_Type. Store the
+   --  result in Dest.
+
+   procedure Add_Cast
+     (B           : Block_Ref;
+      Source      : Value_Type;
+      Dest_Type   : Base_Type;
+      Dest        : Temp_Ref);
+   --  Append a bit-cast conversion instruction to B. This re-interprets bits
+   --  in the Source value as a Dest_Type value, storing the result in Dest.
+
+   --  TODO??? Add call instructions handling
 
    procedure Set_Jump (B : Block_Ref; Dest : Block_Ref);
    --  Make B end with an unconditional jump to Dest
@@ -361,6 +530,71 @@ private
      (Index_Type   => Positive,
       Element_Type => Phi_Type);
 
+   type Instruction_Kind is
+     (Store, Load, Alloc, Copy, Arith, Integer_Comparison, Float_Comparison,
+      Ext, Trunc, Conversion, Cast);
+
+   type Instruction_Type (Kind : Instruction_Kind := Store) is record
+      case Kind is
+         when Store =>
+            Store_Type : Extended_Type;
+            Value      : Value_Type;
+            Store_Addr : Value_Type;
+         when others =>
+            Dest_Type : Base_Type;
+            Dest      : Temp_Ref;
+
+            case Kind is
+               when Store => null;
+
+               when Load =>
+                  Load_Addr        : Value_Type;
+                  Load_Type        : Extended_Type;
+                  Load_Sign_Extend : Boolean;
+
+               when Copy =>
+                  Copy_Value : Value_Type;
+
+               when Alloc =>
+                  Alignment : Alloc_Alignment;
+                  Size      : Value_Type;
+
+               when Arith | Integer_Comparison | Float_Comparison =>
+                  Left, Right : Value_Type;
+                  case Kind is
+                     when Arith =>
+                        Arith_Kind      : Arith_Insn_Kind;
+                     when Integer_Comparison =>
+                        Int_Comp_Op     : Address_Type;
+                        Int_Comp_Kind   : Integer_Comparison_Kind;
+                     when Float_Comparison =>
+                        Float_Comp_Op   : Float_Type;
+                        Float_Comp_Kind : Float_Comparison_Kind;
+                     when others => null;
+                  end case;
+
+               when Ext =>
+                  Ext_Src_Type    : Extended_Type;
+                  Ext_Src         : Value_Type;
+                  Ext_Sign_Extend : Boolean;
+
+               when Trunc =>
+                  Trunc_Src : Value_Type;
+
+               when Conversion =>
+                  Conv_Src_Type : Base_Type;
+                  Conv_Src      : Value_Type;
+
+               when Cast =>
+                  Cast_Src : Value_Type;
+            end case;
+      end case;
+   end record;
+
+   package Instruction_Vectors is new Ada.Containers.Vectors
+     (Index_Type   => Positive,
+      Element_Type => Instruction_Type);
+
    type Jump_Kind is (Jump, Branch, Ret, Ret_Value);
    type Jump_Type (Kind : Jump_Kind := Ret) is record
       case Kind is
@@ -386,6 +620,9 @@ private
 
       Phis  : Phi_Vectors.Vector;
       --  Collection of PHI nodes this block contains
+
+      Insns : Instruction_Vectors.Vector;
+      --  Sequence of instructions this block contains
 
       Jump  : Jump_Type;
       --  Control-flow behavior for this block at the end of its execution

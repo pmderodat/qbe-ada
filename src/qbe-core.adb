@@ -274,6 +274,7 @@ package body QBE.Core is
         (Func  => F,
          Index => F.Next_Block_Index,
          Phis  => <>,
+         Insns => <>,
          Jump  => <>);
    begin
       F.Blocks.Append (Result);
@@ -326,6 +327,276 @@ package body QBE.Core is
    begin
       B.Phis.Append (Phi);
    end Add_Phi;
+
+   --------------
+   -- Add_Copy --
+   --------------
+
+   procedure Add_Copy
+     (B         : Block_Ref;
+      Value     : Value_Type;
+      Dest_Type : Base_Type;
+      Dest      : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind       => Copy,
+                       Dest_Type  => Dest_Type,
+                       Dest       => Dest,
+                       Copy_Value => Value));
+   end Add_Copy;
+
+   ---------------
+   -- Add_Arith --
+   ---------------
+
+   procedure Add_Arith
+     (B           : Block_Ref;
+      Kind        : Arith_Insn_Kind;
+      Left, Right : Value_Type;
+      Dest_Type   : Base_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind       => Arith,
+                       Dest_Type  => Dest_Type,
+                       Dest       => Dest,
+                       Left       => Left,
+                       Right      => Right,
+                       Arith_Kind => Kind));
+   end Add_Arith;
+
+   ---------------
+   -- Add_Store --
+   ---------------
+
+   procedure Add_Store
+     (B          : Block_Ref;
+      Store_Type : Extended_Type;
+      Value      : Value_Type;
+      Address    : Value_Type) is
+   begin
+      B.Insns.Append ((Kind       => Store,
+                       Store_Type => Store_Type,
+                       Value      => Value,
+                       Store_Addr => Address));
+   end Add_Store;
+
+   --------------
+   -- Add_Load --
+   --------------
+
+   procedure Add_Load
+     (B         : Block_Ref;
+      Address   : Value_Type;
+      Dest_Type : Address_Type;
+      Dest      : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind => Load,
+                       Dest_Type        => Dest_Type,
+                       Dest             => Dest,
+                       Load_Addr        => Address,
+                       Load_Type        => Dest_Type,
+                       Load_Sign_Extend => False));
+   end Add_Load;
+
+   --------------
+   -- Add_Load --
+   --------------
+
+   procedure Add_Load
+     (B           : Block_Ref;
+      Address     : Value_Type;
+      Load_Type   : Small_Scalar_Type;
+      Sign_Extend : Boolean;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind             => Load,
+                       Dest_Type        => Dest_Type,
+                       Dest             => Dest,
+                       Load_Addr        => Address,
+                       Load_Type        => Load_Type,
+                       Load_Sign_Extend => Sign_Extend));
+   end Add_Load;
+
+   ---------------
+   -- Add_Alloc --
+   ---------------
+
+   procedure Add_Alloc
+     (B         : Block_Ref;
+      Alignment : Alloc_Alignment;
+      Size      : Value_Type;
+      Dest      : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind      => Alloc,
+                       Dest_Type => B.Func.Unit.Address_Size,
+                       Dest      => Dest,
+                       Alignment => Alignment,
+                       Size      => Size));
+   end Add_Alloc;
+
+   --------------------
+   -- Add_Comparison --
+   --------------------
+
+   procedure Add_Comparison
+     (B            : Block_Ref;
+      Kind         : Integer_Comparison_Kind;
+      Operand_Type : Address_Type;
+      Left, Right  : Value_Type;
+      Dest_Type    : Address_Type;
+      Dest         : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind          => Integer_Comparison,
+                       Dest_Type     => Dest_Type,
+                       Dest          => Dest,
+                       Left          => Left,
+                       Right         => Right,
+                       Int_Comp_Op   => Operand_Type,
+                       Int_Comp_Kind => Kind));
+   end Add_Comparison;
+
+   --------------------
+   -- Add_Comparison --
+   --------------------
+
+   procedure Add_Comparison
+     (B            : Block_Ref;
+      Kind         : Float_Comparison_Kind;
+      Operand_Type : Float_Type;
+      Left, Right  : Value_Type;
+      Dest_Type    : Address_Type;
+      Dest         : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind            => Float_Comparison,
+                       Dest_Type       => Dest_Type,
+                       Dest            => Dest,
+                       Left            => Left,
+                       Right           => Right,
+                       Float_Comp_Op   => Operand_Type,
+                       Float_Comp_Kind => Kind));
+   end Add_Comparison;
+
+   -------------
+   -- Add_Ext --
+   -------------
+
+   procedure Add_Ext
+     (B           : Block_Ref;
+      Source_Type : Small_Scalar_Type;
+      Source      : Value_Type;
+      Sign_Extend : Boolean;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind            => Ext,
+                       Dest_Type       => Dest_Type,
+                       Dest            => Dest,
+                       Ext_Src_Type    => Source_Type,
+                       Ext_Src         => Source,
+                       Ext_Sign_Extend => Sign_Extend));
+   end Add_Ext;
+
+   ------------------
+   -- Add_Ext_Word --
+   ------------------
+
+   procedure Add_Ext_Word
+     (B           : Block_Ref;
+      Source      : Value_Type;
+      Sign_Extend : Boolean;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind            => Ext,
+                       Dest_Type       => Long,
+                       Dest            => Dest,
+                       Ext_Src_Type    => Word,
+                       Ext_Src         => Source,
+                       Ext_Sign_Extend => Sign_Extend));
+   end Add_Ext_Word;
+
+   --------------------
+   -- Add_Ext_Single --
+   --------------------
+
+   procedure Add_Ext_Single
+     (B      : Block_Ref;
+      Source : Value_Type;
+      Dest   : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind            => Ext,
+                       Dest_Type       => Double,
+                       Dest            => Dest,
+                       Ext_Src_Type    => Single,
+                       Ext_Src         => Source,
+                       Ext_Sign_Extend => True));
+   end Add_Ext_Single;
+
+   ----------------------
+   -- Add_Trunc_Double --
+   ----------------------
+
+   procedure Add_Trunc_Double
+     (B      : Block_Ref;
+      Source : Value_Type;
+      Dest   : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind      => Trunc,
+                       Dest_Type => Single,
+                       Dest      => Dest,
+                       Trunc_Src => Source));
+   end Add_Trunc_Double;
+
+   -------------------
+   -- Add_To_Signed --
+   -------------------
+
+   procedure Add_To_Signed
+     (B : Block_Ref;
+      Source_Type : Float_Type;
+      Source      : Value_Type;
+      Dest_Type   : Address_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind          => Conversion,
+                       Dest_Type     => Dest_Type,
+                       Dest          => Dest,
+                       Conv_Src_Type => Source_Type,
+                       Conv_Src      => Source));
+   end Add_To_Signed;
+
+   ------------------
+   -- Add_To_Float --
+   ------------------
+
+   procedure Add_To_Float
+     (B : Block_Ref;
+      Source_Type : Address_Type;
+      Source      : Value_Type;
+      Dest_Type   : Float_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind          => Conversion,
+                       Dest_Type     => Dest_Type,
+                       Dest          => Dest,
+                       Conv_Src_Type => Source_Type,
+                       Conv_Src      => Source));
+   end Add_To_Float;
+
+   --------------
+   -- Add_Cast --
+   --------------
+
+   procedure Add_Cast
+     (B           : Block_Ref;
+      Source      : Value_Type;
+      Dest_Type   : Base_Type;
+      Dest        : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind      => Cast,
+                       Dest_Type => Dest_Type,
+                       Dest      => Dest,
+                       Cast_Src  => Source));
+   end Add_Cast;
 
    --------------
    -- Set_Jump --
