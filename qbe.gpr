@@ -1,5 +1,3 @@
-with "gnatcoll";
-
 library project QBE is
 
     type Build_Mode_Type is ("debug", "release");

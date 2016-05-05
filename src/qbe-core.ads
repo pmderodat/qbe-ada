@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded;
 
 with Interfaces;
 
-private with GNATCOLL.Symbols;
+private with QBE.Symbols;
 
 --  This package provides an API to create in memory QBE programs. Have a look
 --  at the QBE.Core.Dump unit to dump such in memory programs as text.
@@ -480,7 +480,7 @@ package QBE.Core is
 
 private
 
-   type Symbol_Type is new GNATCOLL.Symbols.Symbol;
+   type Symbol_Type is new QBE.Symbols.Symbol_Type;
 
    type Compilation_Unit_Type;
    type Compilation_Unit is access Compilation_Unit_Type;
@@ -670,7 +670,7 @@ private
 
    type Compilation_Unit_Type is limited record
       Address_Size    : Address_Type;
-      Symbols         : GNATCOLL.Symbols.Symbol_Table_Access;
+      Symbols         : QBE.Symbols.Symbol_Table;
       Aggregate_Types : Aggregate_Type_Vectors.Vector;
       Data_Defs       : Data_Vectors.Vector;
       Function_Defs   : Function_Vectors.Vector;

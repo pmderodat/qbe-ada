@@ -1,12 +1,10 @@
 with Interfaces;
 use type Interfaces.Unsigned_64;
 
-with GNATCOLL.Symbols;
-
 procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
 
    function "+" (S : Symbol_Type) return String is
-     (GNATCOLL.Symbols.Get (GNATCOLL.Symbols.Symbol (S)).all);
+     (QBE.Symbols.Value (QBE.Symbols.Symbol_Type (S)));
 
    procedure Put_Comma (Is_First : in out Boolean);
    procedure Put_Label (Prefix : String; Id : Positive);

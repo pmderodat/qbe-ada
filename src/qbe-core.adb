@@ -1,12 +1,10 @@
 with Ada.Containers; use Ada.Containers;
 with Ada.Unchecked_Deallocation;
 
-with GNATCOLL.Symbols; use GNATCOLL.Symbols;
-
 package body QBE.Core is
 
    function Symbol (Unit : Compilation_Unit; Name : String) return Symbol_Type
-   is (Find (Unit.Symbols, Name));
+   is (Symbol_Type (QBE.Symbols.Get (Unit.Symbols, Name)));
 
    --  TODO??? Find a good place to check name unicity and implement it
 
@@ -36,7 +34,7 @@ package body QBE.Core is
 
    function Create (Address_Size : Address_Type) return Compilation_Unit is
      (new Compilation_Unit_Type'(Address_Size => Address_Size,
-                                 Symbols      => Allocate,
+                                 Symbols      => QBE.Symbols.Create,
                                  others       => <>));
 
    -------------
@@ -65,7 +63,7 @@ package body QBE.Core is
          return;
       end if;
 
-      Free (Unit.Symbols);
+      QBE.Symbols.Destroy (Unit.Symbols);
 
       for A of Unit.Aggregate_Types loop
          if A.Kind = Regular then
@@ -104,7 +102,7 @@ package body QBE.Core is
          new Aggregate_Type (Kind => Kind);
    begin
       Result.Unit := Unit;
-      Result.Name := Find (Unit.Symbols, Name);
+      Result.Name := Symbol (Unit, Name);
       Result.Alignment := 0;
       case Kind is
          when Regular => null;
@@ -155,7 +153,7 @@ package body QBE.Core is
       Result : constant Data_Ref := new Data'
         (Unit   => Unit,
          Export => False,
-         Name   => Find (Unit.Symbols, Name),
+         Name   => Symbol (Unit, Name),
          Items  => null);
    begin
       Unit.Data_Defs.Append (Result);
@@ -202,7 +200,7 @@ package body QBE.Core is
       Result : constant Function_Ref := new Function_Type'
         (Unit             => Unit,
          Export           => False,
-         Name             => Find (Unit.Symbols, Name),
+         Name             => Symbol (Unit, Name),
          Has_Return_Type  => False,
          Return_Type      => <>,
          Param_Types      => null,
