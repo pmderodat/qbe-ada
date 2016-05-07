@@ -311,12 +311,31 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
             Put (File, ", ");
             Dump (I.Store_Addr);
 
+         when Call =>
+            Put (I.Call_Dest);
+            Put (File, " =");
+            Dump (I.Call_Dest_Type);
+            Put (File, " call ");
+            Dump (I.Call_Target);
+            Put (File, '(');
+            declare
+               Is_First : Boolean := True;
+            begin
+               for Arg of I.Call_Args.all loop
+                  Put_Comma (Is_First);
+                  Dump (Arg.Arg_Type);
+                  Put (File, ' ');
+                  Dump (Arg.Arg_Value);
+               end loop;
+            end;
+            Put (File, ')');
+
          when others =>
             Put (I.Dest);
             Put (File, " =" & Type_Char (I.Dest_Type) & ' ');
 
             case I.Kind is
-               when Store => raise Program_Error;
+               when Store | Call => raise Program_Error;
 
                when Load =>
                   Put (File, "load" & Type_Char (I.Load_Type));

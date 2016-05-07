@@ -25,6 +25,8 @@ package body QBE.Core is
      (Function_Type, Function_Ref);
    procedure Destroy is new Ada.Unchecked_Deallocation
      (Signature_Array, Signature_Array_Access);
+   procedure Destroy is new Ada.Unchecked_Deallocation
+     (Call_Argument_Array, Call_Argument_Array_Access);
 
    procedure Destroy (B : in out Block_Ref);
 
@@ -47,6 +49,11 @@ package body QBE.Core is
    begin
       for Phi of B.Phis loop
          Destroy (Phi.Values);
+      end loop;
+      for Insn of B.Insns loop
+         if Insn.Kind = Call then
+            Destroy (Insn.Call_Args);
+         end if;
       end loop;
       Destroy (B);
    end Destroy;
@@ -595,6 +602,24 @@ package body QBE.Core is
                        Dest      => Dest,
                        Cast_Src  => Source));
    end Add_Cast;
+
+   --------------
+   -- Add_Call --
+   --------------
+
+   procedure Add_Call
+     (B         : Block_Ref;
+      Target    : Value_Type;
+      Args      : Call_Argument_Array;
+      Dest_Type : Signature_Type;
+      Dest      : Temp_Ref) is
+   begin
+      B.Insns.Append ((Kind           => Call,
+                       Call_Dest_Type => Dest_Type,
+                       Call_Dest      => Dest,
+                       Call_Target    => Target,
+                       Call_Args      => new Call_Argument_Array'(Args)));
+   end Add_Call;
 
    --------------
    -- Set_Jump --

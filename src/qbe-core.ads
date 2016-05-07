@@ -462,6 +462,23 @@ package QBE.Core is
 
    --  TODO??? Add call instructions handling
 
+   type Call_Argument is record
+      Arg_Type  : Signature_Type;
+      Arg_Value : Value_Type;
+   end record;
+   --  Argument for a call instruction
+
+   type Call_Argument_Array is array (Positive range <>) of Call_Argument;
+
+   procedure Add_Call
+     (B         : Block_Ref;
+      Target    : Value_Type;
+      Args      : Call_Argument_Array;
+      Dest_Type : Signature_Type;
+      Dest      : Temp_Ref);
+   --  Append a call instruction to B. Target is the address of the function to
+   --  call. The result of the call is of type Dest_Type and stored in Dest.
+
    procedure Set_Jump (B : Block_Ref; Dest : Block_Ref);
    --  Make B end with an unconditional jump to Dest
 
@@ -530,9 +547,11 @@ private
      (Index_Type   => Positive,
       Element_Type => Phi_Type);
 
+   type Call_Argument_Array_Access is access Call_Argument_Array;
+
    type Instruction_Kind is
      (Store, Load, Alloc, Copy, Arith, Integer_Comparison, Float_Comparison,
-      Ext, Trunc, Conversion, Cast);
+      Ext, Trunc, Conversion, Cast, Call);
 
    type Instruction_Type (Kind : Instruction_Kind := Store) is record
       case Kind is
@@ -540,12 +559,19 @@ private
             Store_Type : Extended_Type;
             Value      : Value_Type;
             Store_Addr : Value_Type;
+
+         when Call =>
+            Call_Dest_Type : Signature_Type;
+            Call_Dest      : Temp_Ref;
+            Call_Target    : Value_Type;
+            Call_Args      : Call_Argument_Array_Access;
+
          when others =>
             Dest_Type : Base_Type;
             Dest      : Temp_Ref;
 
             case Kind is
-               when Store => null;
+               when Store | Call => null;
 
                when Load =>
                   Load_Addr        : Value_Type;
