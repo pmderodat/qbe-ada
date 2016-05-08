@@ -30,6 +30,6 @@ The library will get generated in the `lib` subdirectory.
 Testing
 -------
 
-Testcases are present in the [`tests`](tests/) subdirectory. Each testcase is a mere Ada
-main procedure using the library that print a QBE program on the standard
-output. There is no automated testsuite yet, though.
+Testcases are present in the [`tests`](tests/) subdirectory. Each testcase is a
+mere Ada main procedure using the library that prints a QBE program on the
+standard output. There is no automated testsuite yet, though.
