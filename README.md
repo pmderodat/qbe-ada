@@ -14,9 +14,9 @@ Build
 
 In order to build this project, you need to install:
 
-* an Ada 2012 compiler
-* [GPRbuild](https://github.com/AdaCore/gprbuild)
-* [GNATcoll](https://github.com/AdaCore/gnatcoll)
+* an Ada 2012 compiler, a recent `gnat` Debian package will do the job, for
+  instance;
+* [GPRbuild](https://github.com/AdaCore/gprbuild).
 
 Once they are available, just run from this directory:
 
