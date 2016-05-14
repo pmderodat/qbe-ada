@@ -101,6 +101,25 @@ The library will get generated in the `lib` subdirectory.
 Testing
 -------
 
-Testcases are present in the [`tests`](tests/) subdirectory. Each testcase is a
-mere Ada main procedure using the library that prints a QBE program on the
-standard output. There is no automated testsuite yet, though.
+Testcases are present in the [`testsuite/tests`](testsuite/tests/)
+subdirectory. In order to run the testsuite, make sure QBE is installed, so
+that `qbe` is available in the path and make sure GCC is available as well.
+Then, run from any directory the `run.py` script (it’s a Python 3 script). The
+success and failures will be described with colored OK/FAIL messages on the
+standard output:
+
+```sh
+$ testsuite/run.py
+OK   aggregate_types
+OK   data_defs
+[…]
+```
+
+Each testcase is a mere Ada main procedure using the library that prints a QBE
+program on the standard output and an associated text file that contains the
+expected output. In each Ada source file, there is a `--#` directive that tells
+what how the testcase should be run:
+
+* `check_output` will just compare the generated QBE program;
+* `exec_gen` will build the QBE program as a standalone executable, run it and
+  check its output against the expected one.

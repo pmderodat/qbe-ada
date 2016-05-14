@@ -1,0 +1,11 @@
+function l $f1(l %l1)
+{
+@b1
+jmp @b2
+@b2
+jnz %l1, @b3, @b4
+@b3
+ret %l1
+@b4
+ret
+}

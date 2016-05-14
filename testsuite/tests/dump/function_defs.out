@@ -1,0 +1,23 @@
+type :t0 = align 4 { 16 }
+export function $f0()
+{
+@b1
+ret
+@b2
+ret
+}
+function w $f1()
+{
+@b1
+ret
+}
+function $f2(l %l1)
+{
+@b1
+ret
+}
+function $f3(d %l1, :t0 %l2)
+{
+@b1
+ret
+}

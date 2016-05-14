@@ -1,0 +1,5 @@
+type :t0 = {}
+type :t1 = align 8 {}
+type :t2 = {w, l 2}
+type :t3 = align 0 { 4 }
+type :t4 = align 1 { 0 }

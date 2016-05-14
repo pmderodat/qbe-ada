@@ -1,3 +1,5 @@
+--#check_output
+
 with Ada.Text_IO; use Ada.Text_IO;
 
 with QBE.Core; use QBE.Core;

@@ -1,0 +1,3 @@
+data $d0 = {}
+export data $d1 = {}
+data $d2 = {s $s1, d $s2 + 4, w  0, w $s3, b  97 98 99}
