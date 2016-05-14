@@ -1,21 +1,19 @@
 export function w $fact(w %l1)
 {
-@b1
-%l2 =w add %l1,  0
+  @b1
+  %l2 =w add %l1,  0
+  %l3 =w add  1,  0
+  jmp @b2
 
-%l3 =w add  1,  0
+  @b2
+  %l4 =w csgew %l2,  1
+  jnz %l4, @b3, @b4
 
-jmp @b2
-@b2
-%l4 =w csgew %l2,  1
+  @b3
+  %l3 =w mul %l2, %l3
+  %l2 =w sub %l2,  1
+  jmp @b2
 
-jnz %l4, @b3, @b4
-@b3
-%l3 =w mul %l2, %l3
-
-%l2 =w sub %l2,  1
-
-jmp @b2
-@b4
-ret %l3
+  @b4
+  ret %l3
 }

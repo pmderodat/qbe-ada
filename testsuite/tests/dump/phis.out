@@ -1,9 +1,10 @@
 function $f1(l %l1)
 {
-@b1
-ret
-@b2
-%l1 =w @b1 %l1
-%l2 =s @b1 %l1, @b2 $f1
-ret
+  @b1
+  ret
+
+  @b2
+  %l1 =w @b1 %l1
+  %l2 =s @b1 %l1, @b2 $f1
+  ret
 }

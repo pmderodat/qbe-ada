@@ -7,6 +7,7 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
      (QBE.Symbols.Value (QBE.Symbols.Symbol_Type (S)));
 
    procedure Put_Comma (Is_First : in out Boolean);
+   procedure Empty_Line (Is_First : in out Boolean);
    procedure Put_Label (Prefix : String; Id : Positive);
    procedure Put (B : Block_Ref);
    procedure Put (T : Temp_Ref);
@@ -34,6 +35,19 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
          Put (File, ", ");
       end if;
    end Put_Comma;
+
+   ----------------
+   -- Empty_Line --
+   ----------------
+
+   procedure Empty_Line (Is_First : in out Boolean) is
+   begin
+      if Is_First then
+         Is_First := False;
+      else
+         New_Line (File);
+      end if;
+   end Empty_Line;
 
    ---------------
    -- Put_Label --
@@ -239,9 +253,14 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       Put_Line (File, ")");
 
       Put_Line (File, "{");
-      for B of F.Blocks loop
-         Dump (B);
-      end loop;
+      declare
+         Is_First : Boolean := True;
+      begin
+         for B of F.Blocks loop
+            Empty_Line (Is_First);
+            Dump (B);
+         end loop;
+      end;
       Put_Line (File, "}");
    end Dump;
 
@@ -251,10 +270,12 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
 
    procedure Dump (B : Block_Ref) is
    begin
+      Put (File, "  ");
       Put (B);
       New_Line (File);
 
       for Phi of B.Phis loop
+         Put (File, "  ");
          Put (Phi.Dest);
          Put (File, " =");
          Dump (Phi.Dest_Type);
@@ -273,10 +294,11 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       end loop;
 
       for I of B.Insns loop
+         Put (File, "  ");
          Dump (I);
-         New_Line (File);
       end loop;
 
+      Put (File, "  ");
       case B.Jump.Kind is
          when Jump =>
             Put (File, "jmp ");
@@ -456,16 +478,21 @@ procedure QBE.Core.Dump (Unit : Compilation_Unit; File : in out File_Type) is
       New_Line (File);
    end Dump;
 
+   Is_First : Boolean := True;
+
 begin
    for A of Unit.Aggregate_Types loop
+      Empty_Line (Is_First);
       Dump (A);
    end loop;
 
    for D of Unit.Data_Defs loop
+      Empty_Line (Is_First);
       Dump (D);
    end loop;
 
    for F of Unit.Function_Defs loop
+      Empty_Line (Is_First);
       Dump (F);
    end loop;
 end QBE.Core.Dump;
