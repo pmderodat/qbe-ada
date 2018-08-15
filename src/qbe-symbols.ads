@@ -58,7 +58,7 @@ private
 
    type Symbol_Table is new String_Sets.Set with null record;
 
-   function Create return Symbol_Table is (String_Sets.Set with others => <>);
+   function Create return Symbol_Table is (String_Sets.Set with null record);
 
    function Value (S : Symbol_Type) return String is (S.all);
 
