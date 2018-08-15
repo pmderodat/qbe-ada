@@ -6,7 +6,7 @@ private with Ada.Strings.Hash;
 --
 --  Symbol tables are widely used in compilers share the dynamically allocated
 --  strings used to represent names. Doing so both reduces memory usage and
---  makes name comparison a consant time operation.
+--  makes name comparison a constant time operation.
 
 package QBE.Symbols is
 
