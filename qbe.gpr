@@ -11,7 +11,16 @@ library project QBE is
     for Object_Dir use "obj";
 
     package Compiler is
-        for Default_Switches ("Ada") use ("-gnat12", "-gnatwae", "-gnatyg");
+        Ada_Switches := ("-gnat12", "-gnatwa", "-gnatyg", "-g");
+
+        case Build_Mode is
+            when "debug" =>
+                Ada_Switches := Ada_Switches & ("-g", "-gnatwe");
+            when "release" =>
+                Ada_Switches := Ada_Switches & ("-O2");
+        end case;
+
+        for Default_Switches ("Ada") use Ada_Switches;
     end Compiler;
 
 end QBE;
